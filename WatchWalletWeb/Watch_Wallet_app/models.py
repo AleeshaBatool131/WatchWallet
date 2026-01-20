@@ -5,7 +5,9 @@ class Category(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='categories'
+        related_name='categories',
+        null = True,
+        blank = True
     )
     name = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -47,7 +49,7 @@ class Budget(models.Model):
         related_name='budgets'
     )
     category = models.ForeignKey(
-        Categorym
+        Category,
         on_delete=models.SET_NULL,
         null = True,
         blank = True,

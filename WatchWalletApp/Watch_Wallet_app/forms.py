@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 from .models import Expense,Category
 
 class ExpenseForm(forms.ModelChoiceField):
@@ -20,13 +21,12 @@ class ExpenseForm(forms.ModelChoiceField):
         if user is not None:
             self.fields['category'].queryset = Category.objects.filter(user = user)
 '''
-class SignUpForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
-    confirm_password = forms.CharField(widget=forms.PasswordInput)
-
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'email', 'password1', 'password2']
 
     def clean(self):
         cleaned_data = super().clean()

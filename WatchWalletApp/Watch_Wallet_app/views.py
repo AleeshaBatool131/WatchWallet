@@ -8,11 +8,7 @@ def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = User.objects.create_user(
-                username=form.cleaned_data['username'],
-                email = form.cleaned_data['email'],
-                password = form.cleaned_data['password']
-                )
+            user = form.save()
             login(request, user)
             return redirect('dashboard')
     else:
@@ -22,8 +18,8 @@ def signup_view(request):
 
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password') #prevent server crash if field is unavailable
         user = authenticate(request, username=username, password=password)
 
         if user:

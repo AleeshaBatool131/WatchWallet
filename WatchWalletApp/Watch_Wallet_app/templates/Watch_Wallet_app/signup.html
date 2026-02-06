@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
-    <head>Sign Up</head>
+    <head>
+        <title>Sign Up</title>
+    </head>
     <body>
         <h2>Sign Up</h2>
         <form method="post">
@@ -8,6 +10,6 @@
             {{form.as_p}}
             <button type = "submit">Register</button>
         </form>
-        <p>Already have an account? <a href = "{% url 'login' %}"">Login</a></p>
+        <p>Already have an account? <a href = "{% url 'login' %}">Login</a></p>
     </body>
 </html>

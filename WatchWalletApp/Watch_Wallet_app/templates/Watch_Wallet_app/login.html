@@ -2,19 +2,34 @@
 <html>
     <head>
         <title>Login</title>
+        <style>
+            .error{
+                color: red;
+            }
+            .success{
+                color: green;
+            }
+        </style>
     </head>
     <body>
         <h2> Login</h2>
-        {% if error %} <!--Display Invalid credentials-->
-        <p style = "color: red;">{{error}}</p>
+        {% if messages %} <!--Display Invalid credentials-->
+            {% for message in messages %}
+                <p class="{{% if message.tags == 'error' %}red{% else %}green{% endif %};">
+                    {{ message }}
+                </p>
+            {% endfor %}
         {% endif %}
-
+        
         <form method = "post">
             {% csrf_token %} <!--Protect against attacks-->
             <label>Username</label>
             <input type = "text" name="username"  required><br><br>
             <label>Password</label>
             <input type = "password" name="password"  required><br><br> <!--Required: basic frontend validation-->
+            <label>
+                <input type = "checkbox" name="remember_me">Remember Me
+            </label><br><br>
             <button type="submit">Login</button>
         </form>
         <p>Don't have an account? <a href="{% url 'signup' %}">Sign up</a> </p>

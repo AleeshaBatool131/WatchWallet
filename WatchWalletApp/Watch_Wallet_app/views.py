@@ -1,5 +1,6 @@
+from django.contrib import messages
 from django.shortcuts import render, redirect
-from .forms import SignUpForm
+from .forms import SignUpForm, LoginForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -8,8 +9,11 @@ def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
             login(request, user)
+            messages.success(request,f"Welcome {user.username}! Your account has been created.")
             return redirect('dashboard')
     else:
         form = SignUpForm()
@@ -18,18 +22,25 @@ def signup_view(request):
 
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password') #prevent server crash if field is unavailable
-        user = authenticate(request, username=username, password=password)
-
-        if user:
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
             login(request, user)
+
+            if not form.cleaned_data.get('remember_me'):
+                request.session.set_expiry(0)
+            else:
+                request.session.set_expiry(None)
+
+            messages.success(request, f"Welcome back, {user.username}!")
             return redirect('dashboard')
         else:
-            return render(request, 'Watch_Wallet_app/login.html',{
-                'error': 'Invalid credentials'})
+            messages.error(request, "Invalid username or password.")
+    
+    else:
+        form = LoginForm()
         
-    return render(request, 'Watch_Wallet_app/login.html')
+    return render(request, 'Watch_Wallet_app/login.html',{'form': form})
 
 @login_required
 def dashboard(request):

@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'Watch_Wallet_app',
+    'Watch_Wallet_app.apps.WatchWalletAppConfig',
 ]
 
 MIDDLEWARE = [

@@ -6,8 +6,44 @@
             Welcome, {{ request.user.username}}
         </h2>
         <p>This is your WatchWallet dashboard.</p>
+
+        <div>
+            <h3>Total Income: {{ total_income }}</h3>
+            <h3>Total Expense: {{ total_expense }}</h3>
+            <h3>Balance: {{ balance }}</h3>
+        </div>
         <ul>
-            <li><a href = "{% url 'add_expense' %}">Add Expense</a></li>
+            <h3>This Month Transactions</h3>
+            <form method="GET">
+                <select name = "category">
+                    <option value="">All Categories</option>
+                    {% for c in categories %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+
+                Start Date = <input type="date" name="start_date"
+                End Date = <input type="date" name="end_date">
+
+                <button type="submit">Filter</button>
+            </form>
+            <table border="1">
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.date }}</td>
+                    <td>{{ t.transaction_type }}</td>
+                    <td>{{ t.category }}</td>
+                    <td>{{ t.amount }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <li><a href = "{% url 'add_expense' %}">Add New Expense</a></li>
             <li><a href = "#">Add Category</a></li>
             <li><a href = "#">Budgets</a></li>
             <li><a href = "#">Reports</a></li>

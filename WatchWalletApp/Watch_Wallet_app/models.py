@@ -6,7 +6,7 @@ class Category(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='categories',
-        null = True,
+        null=True,
         blank = True
     )
     name = models.CharField(max_length=50)
@@ -18,6 +18,21 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+class Transaction(models.Model):
+    TRANSACTION_TYPE = (
+        ('income', 'Income'),
+        ('expense', 'Expense'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE)
+    date = models.DateField()
+    description = models.TextField(blank=True)
+    
+    def __str__(self):
+        return f"{self.transaction_type} - {self.amount}"
     
 class Expense(models.Model):
     user = models.ForeignKey(
@@ -41,6 +56,20 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.amount}"
+    def save(self, *args, **kwargs):
+        """
+        Automatically create a corresponding Transaction when an Expense is added.
+        """
+        super().save(*args, **kwargs)  # save expense first
+        from yourapp.models import Transaction
+        Transaction.objects.create(
+            user=self.user,
+            category=self.category,
+            amount=self.amount,
+            transaction_type='expense',
+            date=self.date,
+            description=f"Expense: {self.description}" if self.description else "Expense recorded"
+        )
     
 class Budget(models.Model):
     user = models.ForeignKey(

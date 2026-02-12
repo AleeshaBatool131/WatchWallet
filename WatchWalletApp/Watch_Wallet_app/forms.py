@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import Expense,Category
 
-class ExpenseForm(forms.ModelChoiceField):
+class ExpenseForm(forms.ModelForm):
     class Meta: 
         model = Expense
         fields = ['title', 'amount', 'category', 'expense_date', 'notes']
@@ -11,16 +11,15 @@ class ExpenseForm(forms.ModelChoiceField):
             'expense_date': forms.DateInput(attrs={'type': 'date'}),
             'notes': forms.Textarea(attrs={'rows': 3}),
             }
-#  def __init__(self, *args, **kwargs):
-'''
+    def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        self.fields['category'].queryset = Category.objects.none()
-
-        if user is not None:
+        if user:
             self.fields['category'].queryset = Category.objects.filter(user = user)
-'''
+        else:
+            self.fields['category'].queryset = Category.objects.none()
+
 class SignUpForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, min_length=8)
     confirm_password = forms.CharField(widget=forms.PasswordInput, min_length = 8)

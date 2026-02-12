@@ -1,0 +1,1 @@
+default_app_config = 'Watch_Wallet_app.apps.WatchWalletAppConfig'

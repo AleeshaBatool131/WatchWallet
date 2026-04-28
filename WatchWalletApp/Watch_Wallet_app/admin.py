@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Expense, Budget
+from .models import Category, Budget
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -7,7 +7,7 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields=('name',)
     list_filter=('user',)
 
-@admin.register(Expense)
+"""@admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display=(
         'title',
@@ -21,7 +21,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     search_fields=('title', 'notes')
     ordering=('-expense_date',)
     date_hierarchy = 'expense_date'
-
+"""
 @admin.register(Budget)
 class BudgetAdmin(admin.ModelAdmin):
     list_display=(

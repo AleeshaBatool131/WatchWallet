@@ -1,9 +1,10 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import Expense,Category
+from django.db.models import Q
+from .models import Category, Transaction, Budget, RecurringTransaction, SavingsGoal
 
-class ExpenseForm(forms.ModelForm):
+"""class ExpenseForm(forms.ModelForm):
     class Meta: 
         model = Expense
         fields = ['title', 'amount', 'category', 'expense_date', 'notes']
@@ -19,7 +20,7 @@ class ExpenseForm(forms.ModelForm):
             self.fields['category'].queryset = Category.objects.filter(user = user)
         else:
             self.fields['category'].queryset = Category.objects.none()
-
+"""
 class SignUpForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, min_length=8)
     confirm_password = forms.CharField(widget=forms.PasswordInput, min_length = 8)

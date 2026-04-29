@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import SignUpForm, LoginForm, TransactionForm
+from .forms import SignUpForm, LoginForm, TransactionForm, CategoryForm, BudgetForm, RecurringTransactionForm, SavingsGoalForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from .models import Transaction, Category, Budget, RecurringTransaction, SavingsGoal
@@ -482,7 +482,9 @@ def savings_goal_contribute(request, pk):
 
 @login_required
 def reports_view(request):
-    """Financial reports and analytics"""
+    """Financial reports and analytics with detailed insights"""
+    from django.db.models import Count, Avg
+    
     # Get date range
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
@@ -507,19 +509,81 @@ def reports_view(request):
     total_income = transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
     total_expense = transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
     
-    # Category breakdown
+    # Category breakdown - Income
     income_by_category = transactions.filter(
         transaction_type='income'
-    ).values('category__name').annotate(total=Sum('amount')).order_by('-total')
+    ).values('category__name').annotate(
+        total=Sum('amount'),
+        count=Count('id')
+    ).order_by('-total')
     
+    # Category breakdown - Expense
     expense_by_category = transactions.filter(
         transaction_type='expense'
-    ).values('category__name').annotate(total=Sum('amount')).order_by('-total')
+    ).values('category__name').annotate(
+        total=Sum('amount'),
+        count=Count('id')
+    ).order_by('-total')
     
-    # Monthly breakdown
-    monthly_data = transactions.extra(
-        select={'month': "strftime('%%Y-%%m', date)"}
-    ).values('month', 'transaction_type').annotate(total=Sum('amount')).order_by('month')
+    # Top 5 spending categories
+    top_expense_categories = list(expense_by_category[:5])
+    top_income_categories = list(income_by_category[:5])
+    
+    # Monthly breakdown with aggregation
+    monthly_income = transactions.filter(
+        transaction_type='income'
+    ).values('date__year', 'date__month').annotate(
+        total=Sum('amount')
+    ).order_by('date__year', 'date__month')
+    
+    monthly_expense = transactions.filter(
+        transaction_type='expense'
+    ).values('date__year', 'date__month').annotate(
+        total=Sum('amount')
+    ).order_by('date__year', 'date__month')
+    
+    # Calculate daily averages
+    days_in_range = (end_date - start_date).days + 1
+    avg_daily_income = total_income / days_in_range if days_in_range > 0 else 0
+    avg_daily_expense = total_expense / days_in_range if days_in_range > 0 else 0
+    
+    # Transaction count
+    transaction_count = transactions.count()
+    income_count = transactions.filter(transaction_type='income').count()
+    expense_count = transactions.filter(transaction_type='expense').count()
+    
+    # Budget utilization
+    budgets = Budget.objects.filter(
+        user=request.user,
+        year__gte=start_date.year,
+        month__gte=start_date.month if start_date.year == end_date.year else 1,
+        year__lte=end_date.year,
+        month__lte=end_date.month if start_date.year == end_date.year else 12
+    )
+    
+    budget_data = []
+    for budget in budgets:
+        spent = Transaction.objects.filter(
+            user=request.user,
+            category=budget.category,
+            transaction_type='expense',
+            date__month=budget.month,
+            date__year=budget.year
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        budget_data.append({
+            'category': budget.category.name if budget.category else 'Overall',
+            'budget': budget.amount_limit,
+            'spent': spent,
+            'remaining': budget.amount_limit - spent,
+            'percent_used': round((spent / budget.amount_limit * 100), 1) if budget.amount_limit > 0 else 0
+        })
+    
+    # Savings rate
+    savings_rate = ((total_income - total_expense) / total_income * 100) if total_income > 0 else 0
+    
+    # Recent transactions for context
+    recent_transactions = transactions.order_by('-date')[:10]
     
     context = {
         'start_date': start_date,
@@ -529,7 +593,18 @@ def reports_view(request):
         'balance': total_income - total_expense,
         'income_by_category': list(income_by_category),
         'expense_by_category': list(expense_by_category),
-        'monthly_data': list(monthly_data),
+        'top_expense_categories': top_expense_categories,
+        'top_income_categories': top_income_categories,
+        'monthly_income': list(monthly_income),
+        'monthly_expense': list(monthly_expense),
+        'avg_daily_income': round(avg_daily_income, 2),
+        'avg_daily_expense': round(avg_daily_expense, 2),
+        'transaction_count': transaction_count,
+        'income_count': income_count,
+        'expense_count': expense_count,
+        'budget_data': budget_data,
+        'savings_rate': round(savings_rate, 1),
+        'recent_transactions': recent_transactions,
     }
     
     return render(request, 'Watch_Wallet_app/reports.html', context)

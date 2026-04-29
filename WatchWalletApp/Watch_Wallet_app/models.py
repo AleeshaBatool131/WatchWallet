@@ -34,45 +34,6 @@ class Transaction(models.Model):
     def __str__(self):
         return f"{self.transaction_type} - {self.amount}"
     
-"""class Expense(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='expenses'
-    )
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.PROTECT,
-        related_name = 'expenses'
-    )
-    title =  models.CharField(max_length=100)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    expense_date = models.DateField()
-    notes = models.TextField(blank = True, null = True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-expense_date']
-
-    def __str__(self):
-        return f"{self.title} - {self.amount}"
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None # check if creating a new expense
-        
-        Automatically create a corresponding Transaction when an Expense is added.
-        
-        super().save(*args, **kwargs)  # save expense first
-        if is_new:
-            Transaction.objects.create(
-            user=self.user,
-            category=self.category,
-            amount=self.amount,
-            transaction_type='expense',
-            date=self.expense_date,
-            description=f"Expense: {self.notes}" if self.notes else "Expense recorded"
-        )
-        """
-    
 class Budget(models.Model):
     user = models.ForeignKey(
         User,

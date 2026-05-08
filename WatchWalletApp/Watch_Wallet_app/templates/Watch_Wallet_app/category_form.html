@@ -1,0 +1,27 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}{{ title }} - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="id_name">Category Name:</label>
+        {{ form.name }}
+        {% if form.name.errors %}
+            <div class="form-error">{{ form.name.errors }}</div>
+        {% endif %}
+    </div>
+    {% if form.non_field_errors %}
+        <div class="message error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+    <div class="button-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{% url 'category_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,15 +1,168 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Sign Up</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sign Up - WatchWallet</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .signup-container {
+                background: white;
+                padding: 40px;
+                border-radius: 10px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                max-width: 400px;
+                width: 100%;
+            }
+            .signup-container h1 {
+                text-align: center;
+                margin-bottom: 10px;
+                color: #333;
+            }
+            .signup-container p {
+                text-align: center;
+                color: #666;
+                margin-bottom: 30px;
+                font-size: 14px;
+            }
+            .message {
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 5px;
+                border-left: 4px solid;
+            }
+            .message.error {
+                background: #f8d7da;
+                color: #721c24;
+                border-left-color: #dc3545;
+            }
+            .form-group {
+                margin-bottom: 20px;
+            }
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: 600;
+                color: #333;
+            }
+            input[type="text"], input[type="email"], input[type="password"] {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                font-size: 14px;
+                font-family: inherit;
+            }
+            input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+            }
+            button {
+                width: 100%;
+                padding: 12px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+            .login-link {
+                text-align: center;
+                margin-top: 20px;
+            }
+            .login-link a {
+                color: #667eea;
+                text-decoration: none;
+            }
+            .login-link a:hover {
+                text-decoration: underline;
+            }
+            .form-error {
+                color: #dc3545;
+                font-size: 12px;
+                margin-top: 5px;
+            }
+            ul {
+                list-style: none;
+            }
+            li {
+                color: #dc3545;
+                font-size: 12px;
+            }
+        </style>
     </head>
     <body>
-        <h2>Sign Up</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{form.as_p}}
-            <button type = "submit">Register</button>
-        </form>
-        <p>Already have an account? <a href = "{% url 'login' %}">Login</a></p>
+        <div class="signup-container">
+            <h1>💰 WatchWallet</h1>
+            <p>Create Account</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="message error">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    <input type="text" id="id_username" name="username" required>
+                    {% if form.username.errors %}
+                        <div class="form-error">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_email">Email</label>
+                    <input type="email" id="id_email" name="email" required>
+                    {% if form.email.errors %}
+                        <div class="form-error">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    <input type="password" id="id_password" name="password" required>
+                    {% if form.password.errors %}
+                        <div class="form-error">{{ form.password.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_confirm_password">Confirm Password</label>
+                    <input type="password" id="id_confirm_password" name="confirm_password" required>
+                    {% if form.confirm_password.errors %}
+                        <div class="form-error">{{ form.confirm_password.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit">Register</button>
+            </form>
+            
+            <div class="login-link">
+                <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+            </div>
+        </div>
     </body>
 </html>

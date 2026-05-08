@@ -1,0 +1,22 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}Delete Transaction - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>Delete Transaction</h1>
+
+<div class="card danger">
+    <h3>Are you sure?</h3>
+    <p>You are about to delete the following transaction:</p>
+    <p><strong>{{ transaction.category }} - ${{ transaction.amount|floatformat:2 }}</strong></p>
+    <p>Date: {{ transaction.date }} | Type: {{ transaction.get_transaction_type_display }}</p>
+    
+    <form method="POST" style="margin-top: 20px;">
+        {% csrf_token %}
+        <div class="button-group">
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

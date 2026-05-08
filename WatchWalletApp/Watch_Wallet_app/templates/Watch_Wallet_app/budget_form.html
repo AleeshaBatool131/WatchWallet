@@ -1,0 +1,36 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}{{ title }} - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="id_category">Category:</label>
+        {{ form.category }}
+    </div>
+    <div class="form-group">
+        <label for="id_year">Year:</label>
+        {{ form.year }}
+    </div>
+    <div class="form-group">
+        <label for="id_month">Month:</label>
+        {{ form.month }}
+    </div>
+    <div class="form-group">
+        <label for="id_amount_limit">Budget Limit ($):</label>
+        {{ form.amount_limit }}
+    </div>
+    {% if form.non_field_errors %}
+        <div class="message error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+    <div class="button-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{% url 'budget_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

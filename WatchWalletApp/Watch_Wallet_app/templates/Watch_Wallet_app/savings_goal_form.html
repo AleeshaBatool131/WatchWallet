@@ -1,0 +1,36 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}{{ title }} - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="id_name">Goal Name:</label>
+        {{ form.name }}
+    </div>
+    <div class="form-group">
+        <label for="id_target_amount">Target Amount ($):</label>
+        {{ form.target_amount }}
+    </div>
+    <div class="form-group">
+        <label for="id_current_amount">Current Amount ($):</label>
+        {{ form.current_amount }}
+    </div>
+    <div class="form-group">
+        <label for="id_deadline">Deadline (Optional):</label>
+        {{ form.deadline }}
+    </div>
+    {% if form.non_field_errors %}
+        <div class="message error">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+    <div class="button-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{% url 'savings_goal_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

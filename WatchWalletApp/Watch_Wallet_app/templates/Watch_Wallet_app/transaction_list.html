@@ -1,0 +1,98 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}Transactions - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>Transactions</h1>
+
+<div class="button-group">
+    <a href="{% url 'transaction_add' %}" class="btn btn-primary">+ Add Transaction</a>
+</div>
+
+<form method="GET" style="margin-bottom: 20px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
+        <div class="form-group">
+            <label for="category">Category:</label>
+            <select name="category" id="category">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if request.GET.category|stringformat:"s" == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="type">Type:</label>
+            <select name="type" id="type">
+                <option value="">All Types</option>
+                <option value="income" {% if request.GET.type == 'income' %}selected{% endif %}>Income</option>
+                <option value="expense" {% if request.GET.type == 'expense' %}selected{% endif %}>Expense</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="start_date">From:</label>
+            <input type="date" name="start_date" id="start_date" value="{{ request.GET.start_date }}">
+        </div>
+        <div class="form-group">
+            <label for="end_date">To:</label>
+            <input type="date" name="end_date" id="end_date" value="{{ request.GET.end_date }}">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Reset</a>
+</form>
+
+<div class="grid">
+    <div class="card success">
+        <h3>Total Income</h3>
+        <p style="font-size: 24px; font-weight: bold; color: #28a745;">${{ total_income|floatformat:2 }}</p>
+    </div>
+    <div class="card danger">
+        <h3>Total Expense</h3>
+        <p style="font-size: 24px; font-weight: bold; color: #dc3545;">${{ total_expense|floatformat:2 }}</p>
+    </div>
+    <div class="card">
+        <h3>Balance</h3>
+        <p style="font-size: 24px; font-weight: bold;">{{ balance|floatformat:2 }}</p>
+    </div>
+</div>
+
+{% if transactions %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.date }}</td>
+                    <td>
+                        <span style="padding: 5px 10px; border-radius: 3px; {% if transaction.transaction_type == 'income' %}background: #d4edda; color: #28a745;{% else %}background: #f8d7da; color: #dc3545;{% endif %}">
+                            {{ transaction.get_transaction_type_display }}
+                        </span>
+                    </td>
+                    <td>{{ transaction.category.name }}</td>
+                    <td>${{ transaction.amount|floatformat:2 }}</td>
+                    <td>{{ transaction.description|truncatewords:5 }}</td>
+                    <td>
+                        <a href="{% url 'transaction_edit' transaction.pk %}">Edit</a>
+                        <a href="{% url 'transaction_delete' transaction.pk %}">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="empty-state">
+        <h3>No Transactions Found</h3>
+        <p>Start by adding your first transaction.</p>
+        <a href="{% url 'transaction_add' %}" class="btn btn-primary">Add Transaction</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}Categories - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>Categories</h1>
+
+<div class="button-group">
+    <a href="{% url 'category_add' %}" class="btn btn-primary">+ Add Category</a>
+</div>
+
+{% if categories %}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td>{{ category.name }}</td>
+                    <td>{{ category.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'category_edit' category.pk %}">Edit</a>
+                        <a href="{% url 'category_delete' category.pk %}">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="empty-state">
+        <h3>No Categories Found</h3>
+        <p>Create your first category to organize your transactions.</p>
+        <a href="{% url 'category_add' %}" class="btn btn-primary">Add Category</a>
+    </div>
+{% endif %}
+{% endblock %}

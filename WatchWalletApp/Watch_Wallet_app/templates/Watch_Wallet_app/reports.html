@@ -1,11 +1,119 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Reports - WatchWallet</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}Reports - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>Financial Reports & Analytics</h1>
+
+<form method="GET" style="margin-bottom: 20px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
+        <div class="form-group">
+            <label for="start_date">From:</label>
+            <input type="date" name="start_date" id="start_date" value="{{ start_date|date:'Y-m-d' }}">
+        </div>
+        <div class="form-group">
+            <label for="end_date">To:</label>
+            <input type="date" name="end_date" id="end_date" value="{{ end_date|date:'Y-m-d' }}">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Report</button>
+</form>
+
+<div class="grid">
+    <div class="card">
+        <h3>Total Income</h3>
+        <p style="font-size: 24px; font-weight: bold; color: #28a745;">${{ total_income|floatformat:2 }}</p>
+        <p>{{ income_count }} transactions</p>
+    </div>
+    <div class="card">
+        <h3>Total Expense</h3>
+        <p style="font-size: 24px; font-weight: bold; color: #dc3545;">${{ total_expense|floatformat:2 }}</p>
+        <p>{{ expense_count }} transactions</p>
+    </div>
+    <div class="card">
+        <h3>Net Balance</h3>
+        <p style="font-size: 24px; font-weight: bold;">{{ balance|floatformat:2 }}</p>
+        <p>Savings Rate: {{ savings_rate|floatformat:1 }}%</p>
+    </div>
+    <div class="card">
+        <h3>Daily Average</h3>
+        <p style="font-size: 18px; font-weight: bold;">Income: ${{ avg_daily_income|floatformat:2 }}</p>
+        <p style="font-size: 18px; font-weight: bold;">Expense: ${{ avg_daily_expense|floatformat:2 }}</p>
+    </div>
+</div>
+
+<h2>Detailed Reports</h2>
+<div class="grid">
+    <div class="card">
+        <h3>Budget Report</h3>
+        <p>View detailed budget analysis and spending vs budget comparison.</p>
+        <a href="{% url 'budget_report' %}" class="btn btn-primary" style="margin-top: 10px;">View Report</a>
+    </div>
+    <div class="card">
+        <h3>Category Report</h3>
+        <p>Analyze spending patterns by category and track trends over time.</p>
+        <a href="{% url 'category_report' %}" class="btn btn-primary" style="margin-top: 10px;">View Report</a>
+    </div>
+    <div class="card">
+        <h3>Trends Report</h3>
+        <p>View income and expense trends with forecasting analysis.</p>
+        <a href="{% url 'trends_report' %}" class="btn btn-primary" style="margin-top: 10px;">View Report</a>
+    </div>
+    <div class="card">
+        <h3>Export Data</h3>
+        <p>Export your transactions to CSV for external analysis.</p>
+        <form method="GET" action="{% url 'export_csv' %}" style="margin: 0;">
+            <input type="hidden" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+            <input type="hidden" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+            <button type="submit" class="btn btn-success" style="margin-top: 10px; width: 100%;">Download CSV</button>
+        </form>
+    </div>
+</div>
+
+<h2>Income By Category</h2>
+{% if top_income_categories %}
+    <table>
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Transactions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in top_income_categories %}
+                <tr>
+                    <td>{{ cat.category__name }}</td>
+                    <td>${{ cat.total|floatformat:2 }}</td>
+                    <td>{{ cat.count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<h2>Expense By Category</h2>
+{% if top_expense_categories %}
+    <table>
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Transactions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in top_expense_categories %}
+                <tr>
+                    <td>{{ cat.category__name }}</td>
+                    <td>${{ cat.total|floatformat:2 }}</td>
+                    <td>{{ cat.count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}
         body {
             font-family: Arial, sans-serif;
             margin: 0;

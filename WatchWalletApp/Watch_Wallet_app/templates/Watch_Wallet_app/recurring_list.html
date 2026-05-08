@@ -1,0 +1,60 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}Recurring Transactions - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>Recurring Transactions</h1>
+
+<div class="button-group">
+    <a href="{% url 'recurring_add' %}" class="btn btn-primary">+ Add Recurring Transaction</a>
+    <a href="{% url 'process_recurring' %}" class="btn btn-success">Process Due Transactions</a>
+</div>
+
+{% if recurrings %}
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Type</th>
+                <th>Frequency</th>
+                <th>Next Run</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for recurring in recurrings %}
+                <tr>
+                    <td>{{ recurring.description|default:recurring.category }}</td>
+                    <td>{{ recurring.category.name }}</td>
+                    <td>${{ recurring.amount|floatformat:2 }}</td>
+                    <td>
+                        <span style="padding: 5px 10px; border-radius: 3px; {% if recurring.transaction_type == 'income' %}background: #d4edda; color: #28a745;{% else %}background: #f8d7da; color: #dc3545;{% endif %}">
+                            {{ recurring.get_transaction_type_display }}
+                        </span>
+                    </td>
+                    <td>{{ recurring.get_frequency_display }}</td>
+                    <td>{{ recurring.next_run_date }}</td>
+                    <td>
+                        <span style="padding: 5px 10px; border-radius: 3px; {% if recurring.is_active %}background: #d4edda; color: #28a745;{% else %}background: #e9ecef; color: #999;{% endif %}">
+                            {% if recurring.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'recurring_edit' recurring.pk %}">Edit</a>
+                        <a href="{% url 'recurring_delete' recurring.pk %}">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="empty-state">
+        <h3>No Recurring Transactions Found</h3>
+        <p>Create your first recurring transaction to automate regular income or expenses.</p>
+        <a href="{% url 'recurring_add' %}" class="btn btn-primary">Add Recurring Transaction</a>
+    </div>
+{% endif %}
+{% endblock %}

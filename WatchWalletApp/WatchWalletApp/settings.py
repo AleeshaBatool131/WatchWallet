@@ -84,8 +84,6 @@ DATABASES = {
         'PORT': '3306',
     }
 }
-DATABASES['default']['OPTIONS'] = {
-    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"}
 
 
 # Password validation

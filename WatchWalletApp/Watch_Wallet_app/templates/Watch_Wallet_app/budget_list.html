@@ -1,0 +1,59 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}Budgets - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>Budgets</h1>
+
+<div class="button-group">
+    <a href="{% url 'budget_add' %}" class="btn btn-primary">+ Add Budget</a>
+</div>
+
+{% if budget_data %}
+    <table>
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Budget Limit</th>
+                <th>Spent</th>
+                <th>Remaining</th>
+                <th>Progress</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in budget_data %}
+                <tr>
+                    <td>{{ item.budget.category.name|default:"Overall" }}</td>
+                    <td>${{ item.budget.amount_limit|floatformat:2 }}</td>
+                    <td>${{ item.spent|floatformat:2 }}</td>
+                    <td>${{ item.remaining|floatformat:2 }}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ item.percent_used|default:0 }}%;">
+                                {{ item.percent_used|default:0|floatformat:0 }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="padding: 5px 10px; border-radius: 3px; {% if item.status == 'good' %}background: #d4edda; color: #28a745;{% elif item.status == 'on_track' %}background: #fff3cd; color: #856404;{% else %}background: #f8d7da; color: #dc3545;{% endif %}">
+                            {{ item.status|title }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'budget_edit' item.budget.pk %}">Edit</a>
+                        <a href="{% url 'budget_delete' item.budget.pk %}">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="empty-state">
+        <h3>No Budgets Found</h3>
+        <p>Create your first budget to track your spending.</p>
+        <a href="{% url 'budget_add' %}" class="btn btn-primary">Add Budget</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}Savings Goals - WatchWallet{% endblock %}
+
+{% block content %}
+<h1>Savings Goals</h1>
+
+<div class="button-group">
+    <a href="{% url 'savings_goal_add' %}" class="btn btn-primary">+ Add Savings Goal</a>
+</div>
+
+{% if goals %}
+    <div class="grid">
+        {% for goal in goals %}
+            <div class="card">
+                <h3>{{ goal.name }}</h3>
+                <p><strong>Target:</strong> ${{ goal.target_amount|floatformat:2 }}</p>
+                <p><strong>Current:</strong> ${{ goal.current_amount|floatformat:2 }}</p>
+                <p><strong>Remaining:</strong> ${{ goal.remaining_amount|floatformat:2 }}</p>
+                <p><strong>Status:</strong> 
+                    <span style="padding: 3px 8px; border-radius: 3px; {% if goal.status == 'completed' %}background: #d4edda; color: #28a745;{% elif goal.status == 'active' %}background: #d1ecf1; color: #0c5460;{% else %}background: #e2e3e5; color: #383d41;{% endif %}">
+                        {{ goal.get_status_display }}
+                    </span>
+                </p>
+                {% if goal.deadline %}
+                    <p><strong>Deadline:</strong> {{ goal.deadline }}</p>
+                {% endif %}
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ goal.progress_percentage|floatformat:0 }}%;">
+                        {{ goal.progress_percentage|floatformat:0 }}%
+                    </div>
+                </div>
+                <form method="POST" action="{% url 'savings_goal_contribute' goal.pk %}" style="margin-top: 15px;">
+                    {% csrf_token %}
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" name="contribution_amount" placeholder="Amount" step="0.01" min="0" required style="flex: 1;">
+                        <button type="submit" class="btn btn-success">Add Contribution</button>
+                    </div>
+                </form>
+                <div style="margin-top: 10px;">
+                    <a href="{% url 'savings_goal_edit' goal.pk %}">Edit</a> |
+                    <a href="{% url 'savings_goal_delete' goal.pk %}">Delete</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <h3>No Savings Goals Found</h3>
+        <p>Create your first savings goal to track your progress.</p>
+        <a href="{% url 'savings_goal_add' %}" class="btn btn-primary">Add Savings Goal</a>
+    </div>
+{% endif %}
+{% endblock %}

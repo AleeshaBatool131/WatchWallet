@@ -44,5 +44,8 @@ urlpatterns = [
     
     # Reports
     path('reports/', views.reports_view, name='reports'),
+    path('reports/budget/', views.budget_report, name='budget_report'),
+    path('reports/category/', views.category_report, name='category_report'),
+    path('reports/trends/', views.trends_report, name='trends_report'),
     path('reports/export-csv/', views.export_csv, name='export_csv'),
 ]

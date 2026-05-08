@@ -483,21 +483,32 @@ def savings_goal_contribute(request, pk):
 @login_required
 def reports_view(request):
     """Financial reports and analytics with detailed insights"""
-    from django.db.models import Count, Avg
+    from django.db.models import Count, Avg, Sum
+    from datetime import datetime, timedelta
     
     # Get date range
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
     
-    if not start_date:
+    if not start_date_str:
         start_date = date(date.today().year, 1, 1)
     else:
-        start_date = date.fromisoformat(start_date)
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            start_date = date(date.today().year, 1, 1)
     
-    if not end_date:
+    if not end_date_str:
         end_date = date.today()
     else:
-        end_date = date.fromisoformat(end_date)
+        try:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            end_date = date.today()
+    
+    # Ensure start_date is not after end_date
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
     
     # Get transactions in date range
     transactions = Transaction.objects.filter(
@@ -585,6 +596,72 @@ def reports_view(request):
     # Recent transactions for context
     recent_transactions = transactions.order_by('-date')[:10]
     
+    # Additional statistics
+    # Largest transactions
+    largest_income = transactions.filter(transaction_type='income').order_by('-amount').first()
+    largest_expense = transactions.filter(transaction_type='expense').order_by('-amount').first()
+    
+    # Average transaction amounts
+    avg_income_amount = transactions.filter(transaction_type='income').aggregate(Avg('amount'))['amount__avg'] or 0
+    avg_expense_amount = transactions.filter(transaction_type='expense').aggregate(Avg('amount'))['amount__avg'] or 0
+    
+    # Weekly breakdown (last 4 weeks)
+    today = date.today()
+    weekly_data = []
+    for i in range(4):
+        week_start = today - timedelta(days=today.weekday() + (i * 7))
+        week_end = week_start + timedelta(days=6)
+        
+        week_income = transactions.filter(
+            transaction_type='income',
+            date__range=[week_start, week_end]
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        week_expense = transactions.filter(
+            transaction_type='expense',
+            date__range=[week_start, week_end]
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        weekly_data.append({
+            'week': f'Week {4-i}',
+            'income': week_income,
+            'expense': week_expense,
+            'start': week_start,
+            'end': week_end
+        })
+    
+    # Category spending trends (compare with previous period)
+    period_length = (end_date - start_date).days + 1
+    prev_start = start_date - timedelta(days=period_length)
+    prev_end = start_date - timedelta(days=1)
+    
+    prev_transactions = Transaction.objects.filter(
+        user=request.user,
+        date__range=[prev_start, prev_end]
+    )
+    
+    prev_expense_by_category = prev_transactions.filter(
+        transaction_type='expense'
+    ).values('category__name').annotate(
+        total=Sum('amount')
+    )
+    
+    # Create comparison data
+    category_comparison = []
+    for curr_cat in expense_by_category:
+        prev_cat = next((p for p in prev_expense_by_category if p['category__name'] == curr_cat['category__name']), None)
+        prev_amount = prev_cat['total'] if prev_cat else 0
+        change = curr_cat['total'] - prev_amount
+        change_percent = (change / prev_amount * 100) if prev_amount > 0 else 0
+        
+        category_comparison.append({
+            'category': curr_cat['category__name'],
+            'current': curr_cat['total'],
+            'previous': prev_amount,
+            'change': change,
+            'change_percent': round(change_percent, 1)
+        })
+    
     context = {
         'start_date': start_date,
         'end_date': end_date,
@@ -605,6 +682,12 @@ def reports_view(request):
         'budget_data': budget_data,
         'savings_rate': round(savings_rate, 1),
         'recent_transactions': recent_transactions,
+        'largest_income': largest_income,
+        'largest_expense': largest_expense,
+        'avg_income_amount': round(avg_income_amount, 2),
+        'avg_expense_amount': round(avg_expense_amount, 2),
+        'weekly_data': weekly_data,
+        'category_comparison': category_comparison,
     }
     
     return render(request, 'Watch_Wallet_app/reports.html', context)
@@ -633,3 +716,208 @@ def export_csv(request):
         writer.writerow([t.date, t.transaction_type, t.category.name, t.amount, t.description or ''])
     
     return response
+
+@login_required
+def budget_report(request):
+    """Detailed budget analysis report"""
+    from django.db.models import Sum
+    
+    # Get current month/year or from parameters
+    current_month = int(request.GET.get('month', date.today().month))
+    current_year = int(request.GET.get('year', date.today().year))
+    
+    budgets = Budget.objects.filter(
+        user=request.user,
+        month=current_month,
+        year=current_year
+    ).select_related('category')
+    
+    budget_analysis = []
+    total_budgeted = 0
+    total_spent = 0
+    
+    for budget in budgets:
+        spent = Transaction.objects.filter(
+            user=request.user,
+            category=budget.category,
+            transaction_type='expense',
+            date__month=current_month,
+            date__year=current_year
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        total_budgeted += budget.amount_limit
+        total_spent += spent
+        
+        budget_analysis.append({
+            'budget': budget,
+            'spent': spent,
+            'remaining': budget.amount_limit - spent,
+            'percent_used': (spent / budget.amount_limit * 100) if budget.amount_limit > 0 else 0,
+            'status': 'over_budget' if spent > budget.amount_limit else 'on_track' if spent > budget.amount_limit * 0.8 else 'good'
+        })
+    
+    # Overall budget status
+    overall_budget = Budget.objects.filter(
+        user=request.user,
+        category__isnull=True,
+        month=current_month,
+        year=current_year
+    ).first()
+    
+    if overall_budget:
+        overall_spent = Transaction.objects.filter(
+            user=request.user,
+            transaction_type='expense',
+            date__month=current_month,
+            date__year=current_year
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        budget_analysis.insert(0, {
+            'budget': overall_budget,
+            'spent': overall_spent,
+            'remaining': overall_budget.amount_limit - overall_spent,
+            'percent_used': (overall_spent / overall_budget.amount_limit * 100) if overall_budget.amount_limit > 0 else 0,
+            'status': 'over_budget' if overall_spent > overall_budget.amount_limit else 'on_track' if overall_spent > overall_budget.amount_limit * 0.8 else 'good'
+        })
+    
+    context = {
+        'budget_analysis': budget_analysis,
+        'current_month': current_month,
+        'current_year': current_year,
+        'total_budgeted': total_budgeted,
+        'total_spent': total_spent,
+        'month_name': date(current_year, current_month, 1).strftime('%B %Y')
+    }
+    
+    return render(request, 'Watch_Wallet_app/budget_report.html', context)
+
+@login_required
+def category_report(request):
+    """Detailed category analysis report"""
+    from django.db.models import Sum, Count
+    
+    # Get date range
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+    
+    if not start_date_str:
+        start_date = date(date.today().year, date.today().month, 1)
+    else:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+    
+    if not end_date_str:
+        end_date = date.today()
+    else:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    
+    # Category analysis for expenses
+    expense_analysis = Transaction.objects.filter(
+        user=request.user,
+        transaction_type='expense',
+        date__range=[start_date, end_date]
+    ).values('category__name').annotate(
+        total_amount=Sum('amount'),
+        transaction_count=Count('id'),
+        avg_amount=Sum('amount') / Count('id')
+    ).order_by('-total_amount')
+    
+    # Category analysis for income
+    income_analysis = Transaction.objects.filter(
+        user=request.user,
+        transaction_type='income',
+        date__range=[start_date, end_date]
+    ).values('category__name').annotate(
+        total_amount=Sum('amount'),
+        transaction_count=Count('id'),
+        avg_amount=Sum('amount') / Count('id')
+    ).order_by('-total_amount')
+    
+    # Monthly trends for top categories
+    top_categories = [cat['category__name'] for cat in expense_analysis[:5]]
+    
+    monthly_trends = {}
+    for category_name in top_categories:
+        monthly_data = Transaction.objects.filter(
+            user=request.user,
+            category__name=category_name,
+            transaction_type='expense',
+            date__range=[start_date, end_date]
+        ).values('date__year', 'date__month').annotate(
+            total=Sum('amount')
+        ).order_by('date__year', 'date__month')
+        
+        monthly_trends[category_name] = list(monthly_data)
+    
+    context = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'expense_analysis': list(expense_analysis),
+        'income_analysis': list(income_analysis),
+        'monthly_trends': monthly_trends,
+        'top_categories': top_categories
+    }
+    
+    return render(request, 'Watch_Wallet_app/category_report.html', context)
+
+@login_required
+def trends_report(request):
+    """Financial trends and forecasting report"""
+    from django.db.models import Sum
+    from datetime import timedelta
+    
+    # Get last 12 months of data
+    end_date = date.today()
+    start_date = end_date - timedelta(days=365)
+    
+    # Monthly income/expense trends
+    monthly_data = []
+    for i in range(12):
+        month_start = start_date + timedelta(days=30*i)
+        month_end = month_start + timedelta(days=30)
+        
+        income = Transaction.objects.filter(
+            user=request.user,
+            transaction_type='income',
+            date__range=[month_start, month_end]
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        expense = Transaction.objects.filter(
+            user=request.user,
+            transaction_type='expense',
+            date__range=[month_start, month_end]
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        monthly_data.append({
+            'month': month_start.strftime('%b %Y'),
+            'income': income,
+            'expense': expense,
+            'balance': income - expense
+        })
+    
+    # Calculate trends
+    if len(monthly_data) >= 3:
+        recent_months = monthly_data[-3:]
+        income_trend = sum(m['income'] for m in recent_months) / 3
+        expense_trend = sum(m['expense'] for m in recent_months) / 3
+        
+        # Simple linear regression for forecasting
+        x = list(range(len(monthly_data)))
+        y_income = [m['income'] for m in monthly_data]
+        y_expense = [m['expense'] for m in monthly_data]
+        
+        # Calculate slopes (simplified)
+        income_slope = (y_income[-1] - y_income[0]) / len(y_income) if len(y_income) > 1 else 0
+        expense_slope = (y_expense[-1] - y_expense[0]) / len(y_expense) if len(y_expense) > 1 else 0
+    else:
+        income_trend = expense_trend = income_slope = expense_slope = 0
+    
+    context = {
+        'monthly_data': monthly_data,
+        'income_trend': round(income_trend, 2),
+        'expense_trend': round(expense_trend, 2),
+        'income_slope': round(income_slope, 2),
+        'expense_slope': round(expense_slope, 2),
+        'forecast_period': 3  # months
+    }
+    
+    return render(request, 'Watch_Wallet_app/trends_report.html', context)

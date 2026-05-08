@@ -43,10 +43,12 @@
                 </tr>
                 {% endfor %}
             </table>
-            <li><a href = "{% url 'add_expense' %}">Add New Expense</a></li>
-            <li><a href = "#">Add Category</a></li>
-            <li><a href = "#">Budgets</a></li>
-            <li><a href = "#">Reports</a></li>
+            <li><a href = "{% url 'transaction_list' %}">View Transactions</a></li>
+            <li><a href = "{% url 'category_list' %}">Manage Categories</a></li>
+            <li><a href = "{% url 'budget_list' %}">Budgets</a></li>
+            <li><a href = "{% url 'reports' %}">Reports & Analytics</a></li>
+            <li><a href = "{% url 'recurring_list' %}">Recurring Transactions</a></li>
+            <li><a href = "{% url 'savings_goal_list' %}">Savings Goals</a></li>
         </ul>
         <a href="{% url 'logout' %}">Logout</a>
     </body>

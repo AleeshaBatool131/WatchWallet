@@ -10,6 +10,9 @@ urlpatterns = [
     # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
     
+    # AJAX
+    path('get-categories/', views.get_categories, name='get_categories'),
+    
     # Transactions
     path('transactions/', views.transaction_list, name='transaction_list'),
     path('transactions/add/', views.transaction_add, name='transaction_add'),

@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from .forms import SignUpForm, LoginForm, TransactionForm, CategoryForm, BudgetForm, RecurringTransactionForm, SavingsGoalForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
@@ -14,16 +15,14 @@ def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
-            user.save()
+            user = form.save()
             login(request, user)
-            messages.success(request,f"Welcome {user.username}! Your account has been created.")
+            messages.success(request, f"Welcome {user.username}! Your account has been created.")
             return redirect('dashboard')
     else:
         form = SignUpForm()
     
-    return render(request, 'Watch_Wallet_app/signup.html',{'form': form})
+    return render(request, 'Watch_Wallet_app/signup.html', {'form': form})
 
 def login_view(request):
     if request.method == 'POST':
@@ -84,6 +83,15 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+@login_required
+def get_categories(request):
+    """AJAX view to get categories based on transaction type"""
+    transaction_type = request.GET.get('type')
+    if transaction_type:
+        categories = Category.objects.filter(user=request.user, type=transaction_type)
+        data = {'categories': list(categories.values('id', 'name'))}
+    return JsonResponse(data)
+
 # ============ Transaction CRUD Views ============
 
 @login_required
@@ -127,13 +135,31 @@ def transaction_add(request):
     if request.method == 'POST':
         form = TransactionForm(request.POST, user=request.user)
         if form.is_valid():
-            transaction = form.save(commit=False)
-            transaction.user = request.user
-            transaction.save()
-            messages.success(request, "Transaction added successfully!")
-            return redirect('transaction_list')
+            category = form.cleaned_data.get('category')
+            if category == '__add_new__':
+                # Store form data in session and redirect to add category
+                request.session['pending_transaction_data'] = {
+                    'transaction_type': form.cleaned_data.get('transaction_type'),
+                    'amount': str(form.cleaned_data.get('amount')),
+                    'date': str(form.cleaned_data.get('date')),
+                    'description': form.cleaned_data.get('description'),
+                }
+                messages.info(request, "Please add a new category first.")
+                return redirect('category_add')
+            else:
+                transaction = form.save(commit=False)
+                transaction.user = request.user
+                transaction.save()
+                messages.success(request, "Transaction added successfully!")
+                return redirect('transaction_list')
     else:
-        form = TransactionForm(user=request.user)
+        # Check if we have pending transaction data from category creation
+        pending_data = request.session.pop('pending_transaction_data', None)
+        if pending_data:
+            form = TransactionForm(user=request.user, transaction_type=pending_data.get('transaction_type'))
+            form.initial = pending_data
+        else:
+            form = TransactionForm(user=request.user)
     
     return render(request, 'Watch_Wallet_app/transaction_form.html', {'form': form, 'title': 'Add Transaction'})
 
@@ -145,11 +171,23 @@ def transaction_edit(request, pk):
     if request.method == 'POST':
         form = TransactionForm(request.POST, instance=transaction, user=request.user)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Transaction updated successfully!")
-            return redirect('transaction_list')
+            category = form.cleaned_data.get('category')
+            if category == '__add_new__':
+                # Store form data in session and redirect to add category
+                request.session['pending_transaction_data'] = {
+                    'transaction_type': form.cleaned_data.get('transaction_type'),
+                    'amount': str(form.cleaned_data.get('amount')),
+                    'date': str(form.cleaned_data.get('date')),
+                    'description': form.cleaned_data.get('description'),
+                }
+                messages.info(request, "Please add a new category first.")
+                return redirect('category_add')
+            else:
+                form.save()
+                messages.success(request, "Transaction updated successfully!")
+                return redirect('transaction_list')
     else:
-        form = TransactionForm(instance=transaction, user=request.user)
+        form = TransactionForm(instance=transaction, user=request.user, transaction_type=transaction.transaction_type)
     
     return render(request, 'Watch_Wallet_app/transaction_form.html', {'form': form, 'title': 'Edit Transaction'})
 
@@ -170,8 +208,12 @@ def transaction_delete(request, pk):
 @login_required
 def category_list(request):
     """List all categories"""
-    categories = Category.objects.filter(user=request.user).order_by('name')
-    return render(request, 'Watch_Wallet_app/category_list.html', {'categories': categories})
+    income_categories = Category.objects.filter(user=request.user, type='income').order_by('name')
+    expense_categories = Category.objects.filter(user=request.user, type='expense').order_by('name')
+    return render(request, 'Watch_Wallet_app/category_list.html', {
+        'income_categories': income_categories,
+        'expense_categories': expense_categories
+    })
 
 @login_required
 def category_add(request):
@@ -183,9 +225,30 @@ def category_add(request):
             category.user = request.user
             category.save()
             messages.success(request, "Category added successfully!")
-            return redirect('category_list')
+            
+            # Check where to redirect
+            return_to = request.GET.get('return_to', 'category_list')
+            pending_data = request.session.get('pending_transaction_data')
+            
+            if pending_data:
+                # Clear the pending data and redirect back to transaction add
+                del request.session['pending_transaction_data']
+                return redirect('transaction_add')
+            elif return_to == 'transaction_add':
+                return redirect('transaction_add')
+            else:
+                return redirect('category_list')
     else:
-        form = CategoryForm()
+        # Pre-fill the type from query parameter or session data
+        transaction_type = request.GET.get('type')
+        pending_data = request.session.get('pending_transaction_data')
+        
+        if transaction_type:
+            form = CategoryForm(initial={'type': transaction_type})
+        elif pending_data:
+            form = CategoryForm(initial={'type': pending_data.get('transaction_type')})
+        else:
+            form = CategoryForm()
     
     return render(request, 'Watch_Wallet_app/category_form.html', {'form': form, 'title': 'Add Category'})
 

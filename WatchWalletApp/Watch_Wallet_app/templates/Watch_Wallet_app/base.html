@@ -289,7 +289,6 @@
         <nav>
             <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
             <a href="{% url 'transaction_list' %}" class="{% if 'transaction' in request.resolver_match.url_name %}active{% endif %}">Transactions</a>
-            <a href="{% url 'category_list' %}" class="{% if 'category' in request.resolver_match.url_name %}active{% endif %}">Categories</a>
             <a href="{% url 'budget_list' %}" class="{% if 'budget' in request.resolver_match.url_name %}active{% endif %}">Budgets</a>
             <a href="{% url 'recurring_list' %}" class="{% if 'recurring' in request.resolver_match.url_name %}active{% endif %}">Recurring</a>
             <a href="{% url 'savings_goal_list' %}" class="{% if 'savings_goal' in request.resolver_match.url_name %}active{% endif %}">Savings Goals</a>

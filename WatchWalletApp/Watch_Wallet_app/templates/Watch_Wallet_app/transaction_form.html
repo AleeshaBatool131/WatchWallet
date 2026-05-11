@@ -5,27 +5,45 @@
 {% block content %}
 <h1>{{ title }}</h1>
 
-<form method="POST">
+<form method="POST" id="transaction-form">
     {% csrf_token %}
-    <div class="form-group">
-        <label for="id_category">Category:</label>
-        {{ form.category }}
-    </div>
     <div class="form-group">
         <label for="id_transaction_type">Type:</label>
         {{ form.transaction_type }}
+        {% if form.transaction_type.errors %}
+            <div class="form-error">{{ form.transaction_type.errors }}</div>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <label for="id_category">Category:</label>
+        <div style="display: flex; gap:10px; align-items: center;">
+             {{ form.category }}
+             <button type="button" id="add-category-btn" class="btn btn-secondary">+ Add Category</button>
+        </div>
+        {% if form.category.errors %}
+            <div class="form-error">{{ form.category.errors }}</div>
+        {% endif %}
     </div>
     <div class="form-group">
         <label for="id_amount">Amount:</label>
         {{ form.amount }}
+        {% if form.amount.errors %}
+            <div class="form-error">{{ form.amount.errors }}</div>
+        {% endif %}
     </div>
     <div class="form-group">
         <label for="id_date">Date:</label>
         {{ form.date }}
+        {% if form.date.errors %}
+            <div class="form-error">{{ form.date.errors }}</div>
+        {% endif %}
     </div>
     <div class="form-group">
         <label for="id_description">Description:</label>
         {{ form.description }}
+        {% if form.description.errors %}
+            <div class="form-error">{{ form.description.errors }}</div>
+        {% endif %}
     </div>
     {% if form.non_field_errors %}
         <div class="message error">
@@ -37,4 +55,68 @@
         <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const transactionTypeSelect = document.getElementById('id_transaction_type');
+    const categorySelect = document.getElementById('id_category');
+    
+    function updateCategories() {
+        const selectedType = transactionTypeSelect.value;
+        if (!selectedType) {
+            // Clear categories if no type selected
+            categorySelect.innerHTML = '<option value="">---------</option>';
+            return;
+        }
+        
+        // Fetch categories via AJAX
+        fetch(`{% url 'get_categories' %}?type=${selectedType}`)
+            .then(response => response.json())
+            .then(data => {
+                // Clear existing options
+                categorySelect.innerHTML = '';
+                
+                // Add categories
+                data.categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    categorySelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching categories:', error);
+            });
+    }
+    
+    // Update categories when transaction type changes
+    transactionTypeSelect.addEventListener('change', updateCategories);
+    
+    // Load initial categories if transaction type is already selected
+    if (transactionTypeSelect.value) {
+        updateCategories();
+    }
+    // Add new category button
+     document.getElementById('add-category-btn')
+        .addEventListener('click', function(e){
+            e.preventDefault();
+            const selectedType = transactionTypeSelect.value;
+            if (!selectedType) {
+                alert('Please select a transaction type first.');
+                return;
+            }
+            // Store transaction form data in a session via POST before redirecting
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            formData.append('transaction_type', selectedType);
+            formData.append('amount', document.getElementById('id_amount').value || '');
+            formData.append('date', document.getElementById('id_date').value || '');
+            formData.append('description', document.getElementById('id_description').value || '');
+            
+            // Store in session and redirect
+            window.location.href = `{% url 'category_add' %}?type=${selectedType}&return_to=transaction_add`;
+        }) 
+    
+});
+</script>
 {% endblock %}

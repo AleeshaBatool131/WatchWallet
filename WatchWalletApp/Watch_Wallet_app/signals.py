@@ -5,22 +5,31 @@ from .models import Category, Transaction, RecurringTransaction
 from datetime import date, timedelta
 
 DEFAULT_CATEGORIES = [
-    "Food",
-    "Transport",
-    "Rent",
-    "Utilities",
-    "Entertainment",
-    "Health",
-    "Others",
+    # Expense categories
+    {"name": "Food", "type": "expense"},
+    {"name": "Transport", "type": "expense"},
+    {"name": "Rent", "type": "expense"},
+    {"name": "Utilities", "type": "expense"},
+    {"name": "Entertainment", "type": "expense"},
+    {"name": "Health", "type": "expense"},
+    {"name": "Others", "type": "expense"},
+
+    # Income categories
+    {"name": "Salary", "type": "income"},
+    {"name": "Freelance", "type": "income"},
+    {"name": "Business", "type": "income"},
+    {"name": "Investment", "type": "income"},
+
     ]
  
 @receiver(post_save, sender=User)
 def create_default_categories(sender, instance, created, **kwargs):
     if created:
-        for name in DEFAULT_CATEGORIES:
+        for category in DEFAULT_CATEGORIES:
             Category.objects.create(
-                user = instance,
-                name = name
+                user=instance,
+                name=category['name'],
+                type=category['type']
                 )
 
 @receiver(post_save, sender=RecurringTransaction)

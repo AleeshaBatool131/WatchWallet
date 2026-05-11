@@ -9,33 +9,69 @@
     <a href="{% url 'category_add' %}" class="btn btn-primary">+ Add Category</a>
 </div>
 
-{% if categories %}
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Created</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for category in categories %}
-                <tr>
-                    <td>{{ category.name }}</td>
-                    <td>{{ category.created_at|date:"M d, Y" }}</td>
-                    <td>
-                        <a href="{% url 'category_edit' category.pk %}">Edit</a>
-                        <a href="{% url 'category_delete' category.pk %}">Delete</a>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <div class="empty-state">
-        <h3>No Categories Found</h3>
-        <p>Create your first category to organize your transactions.</p>
-        <a href="{% url 'category_add' %}" class="btn btn-primary">Add Category</a>
+<div class="grid">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;">Income Categories</h3>
+            <a href="{% url 'category_add' %}?type=income" class="btn btn-success" style="padding: 5px 10px; font-size: 12px;">+ Add Income</a>
+        </div>
+        {% if income_categories %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in income_categories %}
+                        <tr>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'category_edit' category.pk %}">Edit</a>
+                                <a href="{% url 'category_delete' category.pk %}">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No income categories yet.</p>
+        {% endif %}
     </div>
-{% endif %}
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;">Expense Categories</h3>
+            <a href="{% url 'category_add' %}?type=expense" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">+ Add Expense</a>
+        </div>
+        {% if expense_categories %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in expense_categories %}
+                        <tr>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'category_edit' category.pk %}">Edit</a>
+                                <a href="{% url 'category_delete' category.pk %}">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No expense categories yet.</p>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

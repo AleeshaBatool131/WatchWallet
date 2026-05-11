@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Category(models.Model):
+    TRANSACTION_TYPE = (
+        ('income', 'Income'),
+        ('expense', 'Expense'),
+    )
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -10,10 +14,11 @@ class Category(models.Model):
         blank = True
     )
     name = models.CharField(max_length=50)
+    type = models.CharField(max_length=10, choices=TRANSACTION_TYPE, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'name')
+        unique_together = ('user', 'name', 'type')
         ordering = ['name']
 
     def __str__(self):

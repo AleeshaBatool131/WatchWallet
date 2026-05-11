@@ -1,0 +1,77 @@
+{% extends 'Watch_Wallet_app/base.html' %}
+
+{% block title %}Add New Category - WatchWallet{% endblock %}
+
+{% block content %}
+<div class="add-category-container">
+    <h1>Add New Category</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" class="category-form">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="message error">
+                <strong>Error:</strong>
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ form.type.id_for_label }}">Transaction Type:</label>
+            {{ form.type }}
+            {% if form.type.errors %}
+                <div class="form-error">{{ form.type.errors }}</div>
+            {% endif %}
+            <small class="form-help">Select whether this category is for Income or Expense</small>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Category Name:</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="form-error">{{ form.name.errors }}</div>
+            {% endif %}
+            <small class="form-help">e.g., "Groceries", "Salary", "Utilities", etc.</small>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Save Category</button>
+            <a href="{% url 'category_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .add-category-container {
+        max-width: 500px;
+    }
+    
+    .category-form {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    
+    .form-help {
+        display: block;
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .form-error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}

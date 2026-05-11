@@ -63,20 +63,30 @@ class LoginForm(AuthenticationForm):
     )
 
 
+from django.forms.widgets import Select
+
+class CategorySelect(Select):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        if hasattr(value, 'instance') and value.instance:
+            category = value.instance
+            option['attrs']['data-type'] = category.type
+        return option
+
 class TransactionForm(forms.ModelForm):
 
     class Meta:
         model = Transaction
         fields = [
+            'transaction_type',
             'category',
             'amount',
-            'transaction_type',
             'date',
             'description'
         ]
 
         widgets = {
-            'category': forms.Select(attrs={'class': 'form-control'}),
+            'category': CategorySelect(attrs={'class': 'form-control'}),
 
             'amount': forms.NumberInput(
                 attrs={'class': 'form-control'}
@@ -103,14 +113,23 @@ class TransactionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
+        transaction_type = kwargs.pop('transaction_type', None)
 
         super().__init__(*args, **kwargs)
 
         if user:
-            self.fields['category'].queryset = Category.objects.filter(
-                user=user
-            )
+            if transaction_type:
+                # Filter categories by user and type
+                self.fields['category'].queryset = Category.objects.filter(
+                    user=user, type=transaction_type
+                )
+            else:
+                # If no type selected, show all user categories
+                self.fields['category'].queryset = Category.objects.filter(
+                    user=user
+                )
 
+            
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
 
@@ -121,15 +140,26 @@ class TransactionForm(forms.ModelForm):
 
         return amount
 
+    def clean(self):
+        cleaned_data = super().clean()
+        category = cleaned_data.get('category')
+        transaction_type = cleaned_data.get('transaction_type')
+        if category and transaction_type and category != '__add_new__' and hasattr(category, 'type') and category.type != transaction_type:
+            raise forms.ValidationError("Selected category type does not match transaction type.")
+        return cleaned_data
+
 
 class CategoryForm(forms.ModelForm):
 
     class Meta:
         model = Category
-        fields = ['name']
+        fields = ['name', 'type']
 
         widgets = {
             'name': forms.TextInput(
+                attrs={'class': 'form-control'}
+            ),
+            'type': forms.Select(
                 attrs={'class': 'form-control'}
             )
         }
@@ -174,7 +204,8 @@ class BudgetForm(forms.ModelForm):
 
         if user:
             self.fields['category'].queryset = Category.objects.filter(
-                user=user
+                user=user,
+                type='expense'
             )
 
     def clean_amount_limit(self):

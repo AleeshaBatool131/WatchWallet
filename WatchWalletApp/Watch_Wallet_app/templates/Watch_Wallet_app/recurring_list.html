@@ -29,7 +29,7 @@
                 <tr>
                     <td>{{ recurring.description|default:recurring.category }}</td>
                     <td>{{ recurring.category.name }}</td>
-                    <td>${{ recurring.amount|floatformat:2 }}</td>
+                    <td>PKR {{ recurring.amount|floatformat:2 }}</td>
                     <td>
                         <span style="padding: 5px 10px; border-radius: 3px; {% if recurring.transaction_type == 'income' %}background: #d4edda; color: #28a745;{% else %}background: #f8d7da; color: #dc3545;{% endif %}">
                             {{ recurring.get_transaction_type_display }}
@@ -58,3 +58,4 @@
     </div>
 {% endif %}
 {% endblock %}
+

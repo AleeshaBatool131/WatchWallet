@@ -9,11 +9,11 @@
 <div class="grid">
     <div class="card success">
         <h3>Total Income</h3>
-        <p style="font-size: 24px; font-weight: bold; color: #28a745;">${{ total_income|floatformat:2 }}</p>
+        <p style="font-size: 24px; font-weight: bold; color: #28a745;">PKR {{ total_income|floatformat:2 }}</p>
     </div>
     <div class="card danger">
         <h3>Total Expense</h3>
-        <p style="font-size: 24px; font-weight: bold; color: #dc3545;">${{ total_expense|floatformat:2 }}</p>
+        <p style="font-size: 24px; font-weight: bold; color: #dc3545;">PKR {{ total_expense|floatformat:2 }}</p>
     </div>
     <div class="card">
         <h3>Balance</h3>
@@ -66,7 +66,7 @@
                         </span>
                     </td>
                     <td>{{ t.category }}</td>
-                    <td>${{ t.amount|floatformat:2 }}</td>
+                    <td>PKR {{ t.amount|floatformat:2 }}</td>
                 </tr>
             {% endfor %}
         </tbody>

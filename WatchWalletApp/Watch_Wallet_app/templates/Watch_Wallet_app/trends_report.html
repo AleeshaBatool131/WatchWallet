@@ -17,7 +17,20 @@
         .card.trend-down { border-left: 4px solid #ffc107; }
         .card h3 { margin: 0 0 10px 0; font-size: 2em; color: #333; }
         .card p { margin: 0; color: #666; font-size: 0.9em; }
-        .chart-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            height: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100% ;
+            height: 100%;
+        }
         .chart-container h3 { margin-top: 0; color: #333; }
         .forecast-section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
         .forecast-section h3 { margin-top: 0; color: #333; }
@@ -44,11 +57,11 @@
         <!-- Summary Cards -->
         <div class="summary-cards">
             <div class="card income">
-                <h3>${{ income_trend|floatformat:2 }}</h3>
+                <h3>PKR {{ income_trend|floatformat:2 }}</h3>
                 <p>Average Monthly Income</p>
             </div>
             <div class="card expense">
-                <h3>${{ expense_trend|floatformat:2 }}</h3>
+                <h3>PKR {{ expense_trend|floatformat:2 }}</h3>
                 <p>Average Monthly Expenses</p>
             </div>
             <div class="card {% if income_slope > 0 %}trend-up{% else %}trend-down{% endif %}">
@@ -64,13 +77,13 @@
         <!-- Monthly Trends Chart -->
         <div class="chart-container">
             <h3>12-Month Income vs Expenses Trend</h3>
-            <canvas id="trendsChart" width="400" height="300"></canvas>
+            <canvas id="trendsChart" ></canvas>
         </div>
 
         <!-- Balance Trend Chart -->
         <div class="chart-container">
             <h3>Monthly Balance Trend</h3>
-            <canvas id="balanceChart" width="400" height="300"></canvas>
+            <canvas id="balanceChart" ></canvas>
         </div>
 
         <!-- Insights Section -->
@@ -78,21 +91,21 @@
             <h4>📊 Key Insights</h4>
             <ul>
                 {% if income_slope > 0 %}
-                <li><strong class="trend-up">Income is trending upward</strong> by ${{ income_slope|floatformat:2 }} per month</li>
+                <li><strong class="trend-up">Income is trending upward</strong> by PKR {{ income_slope|floatformat:2 }} per month</li>
                 {% else %}
-                <li><strong class="trend-down">Income is trending downward</strong> by ${{ income_slope|floatformat:2 }} per month</li>
+                <li><strong class="trend-down">Income is trending downward</strong> by PKR {{ income_slope|floatformat:2 }} per month</li>
                 {% endif %}
 
                 {% if expense_slope > 0 %}
-                <li><strong class="trend-down">Expenses are increasing</strong> by ${{ expense_slope|floatformat:2 }} per month</li>
+                <li><strong class="trend-down">Expenses are increasing</strong> by PKR {{ expense_slope|floatformat:2 }} per month</li>
                 {% else %}
-                <li><strong class="trend-up">Expenses are decreasing</strong> by ${{ expense_slope|floatformat:2 }} per month</li>
+                <li><strong class="trend-up">Expenses are decreasing</strong> by PKR {{ expense_slope|floatformat:2 }} per month</li>
                 {% endif %}
 
                 {% if cash_flow_positive %}
-                <li><strong class="trend-up">Positive cash flow:</strong> Income exceeds expenses by ${{ cash_flow_diff|floatformat:2 }} monthly</li>
+                <li><strong class="trend-up">Positive cash flow:</strong> Income exceeds expenses by PKR {{ cash_flow_diff|floatformat:2 }} monthly</li>
                 {% else %}
-                <li><strong class="trend-down">Negative cash flow:</strong> Expenses exceed income by ${{ cash_flow_diff|floatformat:2 }} monthly</li>
+                <li><strong class="trend-down">Negative cash flow:</strong> Expenses exceed income by PKR {{ cash_flow_diff|floatformat:2 }} monthly</li>
                 {% endif %}
             </ul>
         </div>
@@ -105,11 +118,11 @@
             <div class="forecast-item">
                 <span>Next Month Projected Income</span>
                 <span class="trend-indicator">
-                    ${{ forecast_income|floatformat:2 }}
+                    PKR {{ forecast_income|floatformat:2 }}
                     {% if income_slope > 0 %}
-                    <span class="trend-up">(↗️ +${{ income_slope|floatformat:2 }})</span>
+                    <span class="trend-up">(↗️ +PKR {{ income_slope|floatformat:2 }})</span>
                     {% elif income_slope < 0 %}
-                    <span class="trend-down">(↘️ ${{ income_slope|floatformat:2 }})</span>
+                    <span class="trend-down">(↘️ PKR {{ income_slope|floatformat:2 }})</span>
                     {% else %}
                     (→ Stable)
                     {% endif %}
@@ -119,11 +132,11 @@
             <div class="forecast-item">
                 <span>Next Month Projected Expenses</span>
                 <span class="trend-indicator">
-                    ${{ forecast_expense|floatformat:2 }}
+                    PKR {{ forecast_expense|floatformat:2 }}
                     {% if expense_slope > 0 %}
-                    <span class="trend-down">(↗️ +${{ expense_slope|floatformat:2 }})</span>
+                    <span class="trend-down">(↗️ +PKR {{ expense_slope|floatformat:2 }})</span>
                     {% elif expense_slope < 0 %}
-                    <span class="trend-up">(↘️ ${{ expense_slope|floatformat:2 }})</span>
+                    <span class="trend-up">(↘️ PKR {{ expense_slope|floatformat:2 }})</span>
                     {% else %}
                     (→ Stable)
                     {% endif %}
@@ -133,7 +146,7 @@
             <div class="forecast-item">
                 <span>Next Month Projected Balance</span>
                 <span class="trend-indicator">
-                    ${{ forecast_balance|floatformat:2 }}
+                    PKR {{ forecast_balance|floatformat:2 }}
                 </span>
             </div>
         </div>
@@ -154,10 +167,10 @@
                     {% for month in monthly_data %}
                     <tr>
                         <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">{{ month.month }}</td>
-                        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #dee2e6; color: #28a745;">${{ month.income|floatformat:2 }}</td>
-                        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #dee2e6; color: #dc3545;">${{ month.expense|floatformat:2 }}</td>
+                        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #dee2e6; color: #28a745;">PKR {{ month.income|floatformat:2 }}</td>
+                        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #dee2e6; color: #dc3545;">PKR {{ month.expense|floatformat:2 }}</td>
                         <td style="padding: 12px; text-align: right; border-bottom: 1px solid #dee2e6; {% if month.balance >= 0 %}color: #28a745{% else %}color: #dc3545{% endif %}">
-                            ${{ month.balance|floatformat:2 }}
+                            PKR {{ month.balance|floatformat:2 }}
                         </td>
                     </tr>
                     {% endfor %}
@@ -203,6 +216,7 @@
             data: trendsData,
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     title: {
                         display: true,
@@ -214,7 +228,7 @@
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return 'PKR ' + value;
                             }
                         }
                     }
@@ -249,6 +263,7 @@
             data: balanceData,
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     title: {
                         display: true,
@@ -259,7 +274,7 @@
                     y: {
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return 'PKR ' + value;
                             }
                         }
                     }

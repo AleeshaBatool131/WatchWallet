@@ -14,9 +14,9 @@
         {% for goal in goals %}
             <div class="card">
                 <h3>{{ goal.name }}</h3>
-                <p><strong>Target:</strong> ${{ goal.target_amount|floatformat:2 }}</p>
-                <p><strong>Current:</strong> ${{ goal.current_amount|floatformat:2 }}</p>
-                <p><strong>Remaining:</strong> ${{ goal.remaining_amount|floatformat:2 }}</p>
+                <p><strong>Target:</strong> PKR {{ goal.target_amount|floatformat:2 }}</p>
+                <p><strong>Current:</strong> PKR {{ goal.current_amount|floatformat:2 }}</p>
+                <p><strong>Remaining:</strong> PKR {{ goal.remaining_amount|floatformat:2 }}</p>
                 <p><strong>Status:</strong> 
                     <span style="padding: 3px 8px; border-radius: 3px; {% if goal.status == 'completed' %}background: #d4edda; color: #28a745;{% elif goal.status == 'active' %}background: #d1ecf1; color: #0c5460;{% else %}background: #e2e3e5; color: #383d41;{% endif %}">
                         {{ goal.get_status_display }}
@@ -30,13 +30,20 @@
                         {{ goal.progress_percentage|floatformat:0 }}%
                     </div>
                 </div>
-                <form method="POST" action="{% url 'savings_goal_contribute' goal.pk %}" style="margin-top: 15px;">
-                    {% csrf_token %}
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" name="contribution_amount" placeholder="Amount" step="0.01" min="0" required style="flex: 1;">
-                        <button type="submit" class="btn btn-success">Add Contribution</button>
+                {% if goal.status == 'completed' %}
+                    <div style="margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 5px; text-align: center; border: 2px solid #28a745;">
+                        <h4 style="color: #28a745; margin: 0 0 5px 0;">🎉 Congratulations!</h4>
+                        <p style="color: #155724; margin: 0; font-weight: 500;">You have reached your savings goal!</p>
                     </div>
-                </form>
+                {% else %}
+                    <form method="POST" action="{% url 'savings_goal_contribute' goal.pk %}" style="margin-top: 15px;">
+                        {% csrf_token %}
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <input type="number" name="contribution_amount" placeholder="Enter amount in PKR" step="100" min="100" required style="width: 100%; padding: 12px; font-size: 16px; font-weight: 500; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+                            <button type="submit" class="btn btn-success" style="width: 100%;">Add Contribution</button>
+                        </div>
+                    </form>
+                {% endif %}
                 <div style="margin-top: 10px;">
                     <a href="{% url 'savings_goal_edit' goal.pk %}">Edit</a> |
                     <a href="{% url 'savings_goal_delete' goal.pk %}">Delete</a>
@@ -52,3 +59,4 @@
     </div>
 {% endif %}
 {% endblock %}
+

@@ -144,3 +144,18 @@ class SavingsGoal(models.Model):
     def remaining_amount(self):
         """Calculate remaining amount to reach goal"""
         return max(0, self.target_amount - self.current_amount)
+    
+    def update_status(self):
+        """Automatically update status based on current progress"""
+        if self.current_amount >= self.target_amount and self.status != 'completed':
+            self.status = 'completed'
+            self.save()
+        elif self.current_amount < self.target_amount and self.status == 'completed':
+            # Allow reactivation if amount drops below target (e.g., after editing)
+            self.status = 'active'
+            self.save()
+    
+    def save(self, *args, **kwargs):
+        """Override save to auto-update status"""
+        self.update_status()
+        super().save(*args, **kwargs)

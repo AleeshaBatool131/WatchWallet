@@ -8,7 +8,7 @@
 <div class="card danger">
     <h3>Are you sure?</h3>
     <p>You are about to delete the following transaction:</p>
-    <p><strong>{{ transaction.category }} - ${{ transaction.amount|floatformat:2 }}</strong></p>
+    <p><strong>{{ transaction.category }} - PKR {{ transaction.amount|floatformat:2 }}</strong></p>
     <p>Date: {{ transaction.date }} | Type: {{ transaction.get_transaction_type_display }}</p>
     
     <form method="POST" style="margin-top: 20px;">
@@ -20,3 +20,4 @@
     </form>
 </div>
 {% endblock %}
+

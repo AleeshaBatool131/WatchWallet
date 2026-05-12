@@ -56,15 +56,15 @@
 
         <div class="summary-cards">
             <div class="card">
-                <h3>${{ total_budgeted|floatformat:2 }}</h3>
+                <h3>PKR {{ total_budgeted|floatformat:2 }}</h3>
                 <p>Total Budgeted</p>
             </div>
             <div class="card">
-                <h3>${{ total_spent|floatformat:2 }}</h3>
+                <h3>PKR {{ total_spent|floatformat:2 }}</h3>
                 <p>Total Spent</p>
             </div>
             <div class="card">
-                <h3>${{ total_budgeted|add:total_spent|floatformat:2 }}</h3>
+                <h3>PKR {{ total_budgeted|add:total_spent|floatformat:2 }}</h3>
                 <p>Remaining Budget</p>
             </div>
             <div class="card">
@@ -79,7 +79,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h4 style="margin: 0;">{{ item.budget.category.name|default:"Overall Budget" }}</h4>
                 <span style="font-size: 1.2em; font-weight: bold;">
-                    ${{ item.spent|floatformat:2 }} / ${{ item.budget.amount_limit|floatformat:2 }}
+                    PKR {{ item.spent|floatformat:2 }} / PKR {{ item.budget.amount_limit|floatformat:2 }}
                 </span>
             </div>
 
@@ -89,7 +89,7 @@
 
             <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #666;">
                 <span>{{ item.percent_used|floatformat:1 }}% used</span>
-                <span>${{ item.remaining|floatformat:2 }} remaining</span>
+                <span>PKR {{ item.remaining|floatformat:2 }} remaining</span>
                 <span class="{% if item.status == 'good' %}good{% elif item.status == 'on_track' %}on_track{% else %}over_budget{% endif %}">
                     {% if item.status == 'good' %}✓ On Track{% elif item.status == 'on_track' %}⚠ Watch{% else %}✗ Over Budget{% endif %}
                 </span>

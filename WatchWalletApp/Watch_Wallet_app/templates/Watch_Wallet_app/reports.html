@@ -22,12 +22,12 @@
 <div class="grid">
     <div class="card">
         <h3>Total Income</h3>
-        <p style="font-size: 24px; font-weight: bold; color: #28a745;">${{ total_income|floatformat:2 }}</p>
+        <p style="font-size: 24px; font-weight: bold; color: #28a745;">PKR {{ total_income|floatformat:2 }}</p>
         <p>{{ income_count }} transactions</p>
     </div>
     <div class="card">
         <h3>Total Expense</h3>
-        <p style="font-size: 24px; font-weight: bold; color: #dc3545;">${{ total_expense|floatformat:2 }}</p>
+        <p style="font-size: 24px; font-weight: bold; color: #dc3545;">PKR {{ total_expense|floatformat:2 }}</p>
         <p>{{ expense_count }} transactions</p>
     </div>
     <div class="card">
@@ -37,8 +37,8 @@
     </div>
     <div class="card">
         <h3>Daily Average</h3>
-        <p style="font-size: 18px; font-weight: bold;">Income: ${{ avg_daily_income|floatformat:2 }}</p>
-        <p style="font-size: 18px; font-weight: bold;">Expense: ${{ avg_daily_expense|floatformat:2 }}</p>
+        <p style="font-size: 18px; font-weight: bold;">Income: PKR {{ avg_daily_income|floatformat:2 }}</p>
+        <p style="font-size: 18px; font-weight: bold;">Expense: PKR {{ avg_daily_expense|floatformat:2 }}</p>
     </div>
 </div>
 
@@ -84,7 +84,7 @@
             {% for cat in top_income_categories %}
                 <tr>
                     <td>{{ cat.category__name }}</td>
-                    <td>${{ cat.total|floatformat:2 }}</td>
+                    <td>PKR {{ cat.total|floatformat:2 }}</td>
                     <td>{{ cat.count }}</td>
                 </tr>
             {% endfor %}
@@ -106,7 +106,7 @@
             {% for cat in top_expense_categories %}
                 <tr>
                     <td>{{ cat.category__name }}</td>
-                    <td>${{ cat.total|floatformat:2 }}</td>
+                    <td>PKR {{ cat.total|floatformat:2 }}</td>
                     <td>{{ cat.count }}</td>
                 </tr>
             {% endfor %}
@@ -322,15 +322,15 @@
         <!-- Summary Cards -->
         <div class="summary-cards">
             <div class="card income">
-                <h3>${{ total_income|floatformat:2 }}</h3>
+                <h3>PKR {{ total_income|floatformat:2 }}</h3>
                 <p>Total Income</p>
             </div>
             <div class="card expense">
-                <h3>${{ total_expense|floatformat:2 }}</h3>
+                <h3>PKR {{ total_expense|floatformat:2 }}</h3>
                 <p>Total Expenses</p>
             </div>
             <div class="card balance">
-                <h3>${{ balance|floatformat:2 }}</h3>
+                <h3>PKR {{ balance|floatformat:2 }}</h3>
                 <p>Net Balance</p>
             </div>
             <div class="card">
@@ -389,7 +389,7 @@
                 {% for category in top_expense_categories %}
                 <div class="category-item">
                     <span>{{ category.category__name }}</span>
-                    <span class="expense-amount">${{ category.total|floatformat:2 }}</span>
+                    <span class="expense-amount">PKR {{ category.total|floatformat:2 }}</span>
                 </div>
                 {% empty %}
                 <p>No expense data available</p>
@@ -402,7 +402,7 @@
                 {% for category in top_income_categories %}
                 <div class="category-item">
                     <span>{{ category.category__name }}</span>
-                    <span class="income-amount">${{ category.total|floatformat:2 }}</span>
+                    <span class="income-amount">PKR {{ category.total|floatformat:2 }}</span>
                 </div>
                 {% empty %}
                 <p>No income data available</p>
@@ -416,12 +416,12 @@
                 <div class="budget-item">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                         <strong>{{ budget.category }}</strong>
-                        <span>${{ budget.spent|floatformat:2 }} / ${{ budget.budget|floatformat:2 }}</span>
+                        <span>PKR {{ budget.spent|floatformat:2 }} / PKR {{ budget.budget|floatformat:2 }}</span>
                     </div>
                     <div class="budget-progress">
                         <div class="budget-progress-fill" style="width: {{ budget.percent_used }}%"></div>
                     </div>
-                    <small>{{ budget.percent_used }}% used • ${{ budget.remaining|floatformat:2 }} remaining</small>
+                    <small>{{ budget.percent_used }}% used • PKR {{ budget.remaining|floatformat:2 }} remaining</small>
                 </div>
                 {% empty %}
                 <p>No budget data available for this period</p>
@@ -437,7 +437,7 @@
                 <div class="category-item">
                     <span>{{ comp.category }}</span>
                     <span style="color: {% if comp.change > 0 %}#dc3545{% elif comp.change < 0 %}#28a745{% else %}#6c757d{% endif %}">
-                        ${{ comp.change|floatformat:2 }} ({{ comp.change_percent }}%)
+                        PKR {{ comp.change|floatformat:2 }} ({{ comp.change_percent }}%)
                     </span>
                 </div>
                 {% empty %}
@@ -451,8 +451,8 @@
                 <div class="category-item">
                     <span>{{ week.week }}</span>
                     <span>
-                        <span class="income-amount">${{ week.income|floatformat:2 }}</span> / 
-                        <span class="expense-amount">${{ week.expense|floatformat:2 }}</span>
+                        <span class="income-amount">PKR {{ week.income|floatformat:2 }}</span> / 
+                        <span class="expense-amount">PKR {{ week.expense|floatformat:2 }}</span>
                     </span>
                 </div>
                 {% endfor %}
@@ -481,11 +481,11 @@
                 <h3>Daily Averages</h3>
                 <div class="category-item">
                     <span>Average Daily Income</span>
-                    <span class="income-amount">${{ avg_daily_income|floatformat:2 }}</span>
+                    <span class="income-amount">PKR {{ avg_daily_income|floatformat:2 }}</span>
                 </div>
                 <div class="category-item">
                     <span>Average Daily Expenses</span>
-                    <span class="expense-amount">${{ avg_daily_expense|floatformat:2 }}</span>
+                    <span class="expense-amount">PKR {{ avg_daily_expense|floatformat:2 }}</span>
                 </div>
             </div>
 
@@ -493,11 +493,11 @@
                 <h3>Transaction Averages</h3>
                 <div class="category-item">
                     <span>Average Income Amount</span>
-                    <span class="income-amount">${{ avg_income_amount|floatformat:2 }}</span>
+                    <span class="income-amount">PKR {{ avg_income_amount|floatformat:2 }}</span>
                 </div>
                 <div class="category-item">
                     <span>Average Expense Amount</span>
-                    <span class="expense-amount">${{ avg_expense_amount|floatformat:2 }}</span>
+                    <span class="expense-amount">PKR {{ avg_expense_amount|floatformat:2 }}</span>
                 </div>
             </div>
 
@@ -506,13 +506,13 @@
                 {% if largest_income %}
                 <div class="category-item">
                     <span>Largest Income</span>
-                    <span class="income-amount">${{ largest_income.amount|floatformat:2 }}</span>
+                    <span class="income-amount">PKR {{ largest_income.amount|floatformat:2 }}</span>
                 </div>
                 {% endif %}
                 {% if largest_expense %}
                 <div class="category-item">
                     <span>Largest Expense</span>
-                    <span class="expense-amount">${{ largest_expense.amount|floatformat:2 }}</span>
+                    <span class="expense-amount">PKR {{ largest_expense.amount|floatformat:2 }}</span>
                 </div>
                 {% endif %}
             </div>
@@ -544,7 +544,7 @@
                         <td>{{ transaction.category.name }}</td>
                         <td>{{ transaction.description|default:"" }}</td>
                         <td class="{% if transaction.transaction_type == 'income' %}income-amount{% else %}expense-amount{% endif %}">
-                            ${{ transaction.amount|floatformat:2 }}
+                            PKR {{ transaction.amount|floatformat:2 }}
                         </td>
                     </tr>
                     {% endfor %}
@@ -611,7 +611,7 @@
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return 'PKR ' + value;
                             }
                         }
                     }
@@ -705,7 +705,7 @@
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return 'PKR ' + value;
                             }
                         }
                     }
@@ -760,7 +760,7 @@
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return 'PKR ' + value;
                             }
                         }
                     }

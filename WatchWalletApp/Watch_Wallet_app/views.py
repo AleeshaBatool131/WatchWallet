@@ -525,19 +525,32 @@ def savings_goal_delete(request, pk):
 @login_required
 def savings_goal_contribute(request, pk):
     """Add contribution to savings goal"""
+    from decimal import Decimal
     goal = get_object_or_404(SavingsGoal, pk=pk, user=request.user)
     
     if request.method == 'POST':
-        amount = request.POST.get('contribution_amount')
-        try:
-            amount = float(amount)
-            goal.current_amount += amount
-            if goal.current_amount >= goal.target_amount:
-                goal.status = 'completed'
-            goal.save()
-            messages.success(request, f"Added ${amount:.2f} to your savings goal!")
-        except ValueError:
-            messages.error(request, "Invalid amount.")
+        amount_str = request.POST.get('contribution_amount', '').strip()
+        
+        if not amount_str:
+            messages.error(request, "Please enter a contribution amount.")
+        else:
+            try:
+                amount = Decimal(amount_str)
+                if amount <= 0:
+                    messages.error(request, "Contribution amount must be greater than zero (minimum: PKR 100).")
+                elif amount > goal.remaining_amount:
+                    messages.error(request, f"Contribution amount cannot exceed remaining amount of PKR {goal.remaining_amount:.2f}.")
+                else:
+                    goal.current_amount += amount
+                    goal.save()  # This will trigger update_status() automatically
+                    
+                    # Check if newly completed
+                    if goal.status == 'completed':
+                        messages.success(request, f"Added PKR {amount:.2f}! 🎉 Goal Completed! You've reached your target!")
+                    else:
+                        messages.success(request, f"Added PKR {amount:.2f} to your savings goal! Progress: {goal.progress_percentage:.1f}%")
+            except (ValueError, TypeError):
+                messages.error(request, f"Invalid amount entered. Please enter a valid number (e.g., 5000 or 5000.50).")
     
     return redirect('savings_goal_list')
 

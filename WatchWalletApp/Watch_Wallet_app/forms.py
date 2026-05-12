@@ -89,7 +89,7 @@ class TransactionForm(forms.ModelForm):
             'category': CategorySelect(attrs={'class': 'form-control'}),
 
             'amount': forms.NumberInput(
-                attrs={'class': 'form-control'}
+                attrs={'class': 'form-control', 'step': '100'}
             ),
 
             'transaction_type': forms.Select(
@@ -193,7 +193,7 @@ class BudgetForm(forms.ModelForm):
             ),
 
             'amount_limit': forms.NumberInput(
-                attrs={'class': 'form-control'}
+                attrs={'class': 'form-control', 'step': '100'}
             ),
         }
 
@@ -240,7 +240,7 @@ class RecurringTransactionForm(forms.ModelForm):
             ),
 
             'amount': forms.NumberInput(
-                attrs={'class': 'form-control'}
+                attrs={'class': 'form-control', 'step': '100'}
             ),
 
             'transaction_type': forms.Select(
@@ -326,11 +326,11 @@ class SavingsGoalForm(forms.ModelForm):
             ),
 
             'target_amount': forms.NumberInput(
-                attrs={'class': 'form-control'}
+                attrs={'class': 'form-control', 'step': '100'}
             ),
 
             'current_amount': forms.NumberInput(
-                attrs={'class': 'form-control'}
+                attrs={'class': 'form-control', 'step': '100'}
             ),
 
             'deadline': forms.DateInput(

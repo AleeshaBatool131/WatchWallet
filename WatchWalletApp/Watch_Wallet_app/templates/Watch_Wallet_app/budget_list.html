@@ -26,9 +26,9 @@
             {% for item in budget_data %}
                 <tr>
                     <td>{{ item.budget.category.name|default:"Overall" }}</td>
-                    <td>${{ item.budget.amount_limit|floatformat:2 }}</td>
-                    <td>${{ item.spent|floatformat:2 }}</td>
-                    <td>${{ item.remaining|floatformat:2 }}</td>
+                    <td>PKR {{ item.budget.amount_limit|floatformat:2 }}</td>
+                    <td>PKR {{ item.spent|floatformat:2 }}</td>
+                    <td>PKR {{ item.remaining|floatformat:2 }}</td>
                     <td>
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: {{ item.percent_used|default:0 }}%;">
@@ -57,3 +57,4 @@
     </div>
 {% endif %}
 {% endblock %}
+

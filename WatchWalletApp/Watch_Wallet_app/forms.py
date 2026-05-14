@@ -129,7 +129,10 @@ class TransactionForm(forms.ModelForm):
                     user=user
                 )
 
-            
+            self.fields['category'].empty_label = 'Select a category'
+
+        self.fields['transaction_type'].choices = [('', 'Select transaction type')] + list(self.fields['transaction_type'].choices)
+
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
 
@@ -163,6 +166,10 @@ class CategoryForm(forms.ModelForm):
                 attrs={'class': 'form-control'}
             )
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['type'].choices = [('', 'Select category type')] + list(self.fields['type'].choices)
 
 
 class BudgetForm(forms.ModelForm):
@@ -207,6 +214,7 @@ class BudgetForm(forms.ModelForm):
                 user=user,
                 type='expense'
             )
+            self.fields['category'].empty_label = 'Select a category'
 
     def clean_amount_limit(self):
         amount = self.cleaned_data.get('amount_limit')
@@ -225,9 +233,9 @@ class RecurringTransactionForm(forms.ModelForm):
         model = RecurringTransaction
 
         fields = [
+            'transaction_type',
             'category',
             'amount',
-            'transaction_type',
             'frequency',
             'next_run_date',
             'end_date',
@@ -275,13 +283,24 @@ class RecurringTransactionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
+        transaction_type = kwargs.pop('transaction_type', None)
 
         super().__init__(*args, **kwargs)
 
         if user:
-            self.fields['category'].queryset = Category.objects.filter(
-                user=user
-            )
+            if transaction_type:
+                self.fields['category'].queryset = Category.objects.filter(
+                    user=user,
+                    type=transaction_type
+                )
+            else:
+                self.fields['category'].queryset = Category.objects.filter(
+                    user=user
+                )
+            self.fields['category'].empty_label = 'Select a category'
+
+        self.fields['transaction_type'].choices = [('', 'Select transaction type')] + list(self.fields['transaction_type'].choices)
+        self.fields['frequency'].choices = [('', 'Select frequency')] + list(self.fields['frequency'].choices)
 
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
@@ -298,12 +317,19 @@ class RecurringTransactionForm(forms.ModelForm):
 
         next_run_date = cleaned_data.get('next_run_date')
         end_date = cleaned_data.get('end_date')
+        category = cleaned_data.get('category')
+        transaction_type = cleaned_data.get('transaction_type')
 
         if end_date and next_run_date:
             if end_date < next_run_date:
                 raise forms.ValidationError(
                     "End date cannot be before next run date."
                 )
+
+        if category and transaction_type and hasattr(category, 'type') and category.type != transaction_type:
+            raise forms.ValidationError(
+                "Selected category type does not match transaction type."
+            )
 
         return cleaned_data
 

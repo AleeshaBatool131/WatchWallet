@@ -8,6 +8,7 @@ from .models import Transaction, Category, Budget, RecurringTransaction, Savings
 from django.db.models import Sum
 from datetime import date, timedelta, datetime
 from django.utils import timezone
+from decimal import Decimal
 
 
 
@@ -302,11 +303,22 @@ def budget_list(request):
             date__year=budget.year
         ).aggregate(Sum('amount'))['amount__sum'] or 0
         
+        percent_used = (spent / budget.amount_limit * 100) if budget.amount_limit > 0 else 0
+        
+        # Determine status based on spending
+        if spent > budget.amount_limit:
+            status = 'over_budget'
+        elif spent > budget.amount_limit * Decimal('0.8'):
+            status = 'on_track'
+        else:
+            status = 'good'
+        
         budget_data.append({
             'budget': budget,
             'spent': spent,
             'remaining': budget.amount_limit - spent,
-            'percent_used': (spent / budget.amount_limit * 100) if budget.amount_limit > 0 else 0
+            'percent_used': percent_used,
+            'status': status
         })
     
     return render(request, 'Watch_Wallet_app/budget_list.html', {'budget_data': budget_data})

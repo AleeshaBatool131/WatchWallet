@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedType = transactionTypeSelect.value;
         if (!selectedType) {
             // Clear categories if no type selected
-            categorySelect.innerHTML = '<option value="">---------</option>';
+            categorySelect.innerHTML = '<option value="">Select category</option>';
             return;
         }
         
@@ -75,6 +75,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 // Clear existing options
                 categorySelect.innerHTML = '';
+
+                const blankOption = document.createElement('option');
+                blankOption.value = '';
+                blankOption.textContent = 'Select category';
+                categorySelect.appendChild(blankOption);
                 
                 // Add categories
                 data.categories.forEach(category => {

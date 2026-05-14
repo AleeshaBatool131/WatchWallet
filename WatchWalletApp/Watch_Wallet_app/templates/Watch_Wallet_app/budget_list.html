@@ -37,8 +37,8 @@
                         </div>
                     </td>
                     <td>
-                        <span style="padding: 5px 10px; border-radius: 3px; {% if item.status == 'good' %}background: #d4edda; color: #28a745;{% elif item.status == 'on_track' %}background: #fff3cd; color: #856404;{% else %}background: #f8d7da; color: #dc3545;{% endif %}">
-                            {{ item.status|title }}
+                        <span style="padding: 5px 10px; border-radius: 3px; {% if item.status == 'good' %}background: #d4edda; color: #28a745;{% elif item.status == 'on_track' %}background: #fff3cd; color: #856404;{% elif item.status == 'over_budget' %}background: #f8d7da; color: #dc3545;{% endif %}">
+                            {% if item.status == 'good' %}Good{% elif item.status == 'on_track' %}On Track{% elif item.status == 'over_budget' %}Over Budget{% endif %}
                         </span>
                     </td>
                     <td>

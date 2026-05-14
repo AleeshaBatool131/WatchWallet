@@ -8,16 +8,16 @@
 <form method="POST">
     {% csrf_token %}
     <div class="form-group">
+        <label for="id_transaction_type">Type:</label>
+        {{ form.transaction_type }}
+    </div>
+    <div class="form-group">
         <label for="id_category">Category:</label>
         {{ form.category }}
     </div>
     <div class="form-group">
         <label for="id_amount">Amount (PKR):</label>
         {{ form.amount }}
-    </div>
-    <div class="form-group">
-        <label for="id_transaction_type">Type:</label>
-        {{ form.transaction_type }}
     </div>
     <div class="form-group">
         <label for="id_frequency">Frequency:</label>

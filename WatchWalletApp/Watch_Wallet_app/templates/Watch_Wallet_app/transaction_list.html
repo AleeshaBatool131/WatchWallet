@@ -10,7 +10,15 @@
 </div>
 
 <form method="GET" style="margin-bottom: 20px;">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px;">
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 20px; margin-bottom: 10px;">
+        <div class="form-group">
+            <label for="type">Type:</label>
+            <select name="type" id="type">
+                <option value="">All Types</option>
+                <option value="income" {% if request.GET.type == 'income' %}selected{% endif %}>Income</option>
+                <option value="expense" {% if request.GET.type == 'expense' %}selected{% endif %}>Expense</option>
+            </select>
+        </div>
         <div class="form-group">
             <label for="category">Category:</label>
             <select name="category" id="category">
@@ -18,14 +26,6 @@
                 {% for cat in categories %}
                     <option value="{{ cat.id }}" {% if request.GET.category|stringformat:"s" == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
                 {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="type">Type:</label>
-            <select name="type" id="type">
-                <option value="">All Types</option>
-                <option value="income" {% if request.GET.type == 'income' %}selected{% endif %}>Income</option>
-                <option value="expense" {% if request.GET.type == 'expense' %}selected{% endif %}>Expense</option>
             </select>
         </div>
         <div class="form-group">
